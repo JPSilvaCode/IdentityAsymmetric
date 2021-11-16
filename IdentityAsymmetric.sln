@@ -3,9 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31829.152
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F23892F9-CB62-475F-83D7-C7BAD7A1E046}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Building Blocks", "Building Blocks", "{85198942-7948-481B-B4D3-D95169C30F97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{9D9CDE9A-9BAC-453F-AF23-A874770A1AEF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{0B907DEF-7888-4CDF-BF61-5680BDDC034C}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{85198942-7948-481B-B4D3-D95169C30F97} = {F23892F9-CB62-475F-83D7-C7BAD7A1E046}
+		{9D9CDE9A-9BAC-453F-AF23-A874770A1AEF} = {F23892F9-CB62-475F-83D7-C7BAD7A1E046}
+		{0B907DEF-7888-4CDF-BF61-5680BDDC034C} = {9D9CDE9A-9BAC-453F-AF23-A874770A1AEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F1E156FA-9980-4438-A6A5-3D1614595DA3}
