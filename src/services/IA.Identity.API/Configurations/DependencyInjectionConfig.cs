@@ -1,5 +1,4 @@
-﻿using IA.Identity.API.Services;
-using IA.WebAPI.Core.User;
+﻿using IA.WebAPI.Core.User;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -11,7 +10,8 @@ namespace IA.Identity.API.Configurations
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
-            services.AddScoped<AuthenticationService>();
+            services.AddScoped<Services.v1_0.AuthenticationService>();
+            services.AddScoped<Services.v2_0.AuthenticationService>();
             services.AddScoped<IAspNetUser, AspNetUser>();
         }
     }

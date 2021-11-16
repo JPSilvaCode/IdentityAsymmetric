@@ -1,6 +1,7 @@
 ﻿using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
 using IA.Identity.API.Services;
+using IA.Identity.API.Services.v1_0;
 using IA.WebAPI.Core.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

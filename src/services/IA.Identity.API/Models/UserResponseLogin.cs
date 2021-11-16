@@ -7,6 +7,7 @@ namespace IA.Identity.API.Models
     {
         public string AccessToken { get; set; }
         public double ExpiresIn { get; set; }
+        public Guid RefreshToken { get; set; }
         public UserToken UsuarioToken { get; set; }
     }
 

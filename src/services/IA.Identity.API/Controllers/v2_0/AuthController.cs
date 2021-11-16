@@ -1,13 +1,14 @@
-﻿using IA.WebAPI.Core.Controllers;
+﻿using System;
+using IA.Identity.API.Models;
+using IA.Identity.API.Services.v2_0;
+using IA.WebAPI.Core.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using IA.Identity.API.Models;
-using IA.Identity.API.Services;
 
-namespace IA.Identity.API.Controllers
+namespace IA.Identity.API.Controllers.v2_0
 {
-    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : MainController
     {
@@ -18,7 +19,7 @@ namespace IA.Identity.API.Controllers
             _authenticationService = authenticationService;
         }
 
-        [HttpPost, MapToApiVersion("1.0")]
+        [HttpPost, MapToApiVersion("2.0")]
         [Route("login")]
         [AllowAnonymous]
         public async Task<ActionResult> Login(UserLogin userLogin)
@@ -44,6 +45,24 @@ namespace IA.Identity.API.Controllers
             }
 
             AddProcessingError("Usuário ou Senha incorretos");
+            return CustomResponse();
+        }
+
+        [HttpPost, MapToApiVersion("2.0")]
+        [Route("refresh-token")]
+        public async Task<IActionResult> RefreshToken(string refreshToken)
+        {
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                AddProcessingError("Refresh Token inválido");
+                return CustomResponse();
+            }
+
+            var token = await _authenticationService.GetRefreshToken(Guid.Parse(refreshToken));
+
+            if (token is not null) return CustomResponse(await _authenticationService.CreateJwt(token.UserEmail));
+
+            AddProcessingError("Refresh Token expirado");
             return CustomResponse();
         }
     }

@@ -24,6 +24,8 @@ namespace IA.Identity.API.Configurations
                 .AddEntityFrameworkStores<IAContext>()
                 .AddDefaultTokenProviders();
 
+            services.Configure<AppTokenSettings>(configuration.GetSection("AppTokenSettings"));
+
             services.AddJwtConfiguration(configuration);
         }
     }
