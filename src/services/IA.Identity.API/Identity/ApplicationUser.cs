@@ -10,5 +10,8 @@ namespace IA.Identity.API.Identity
 
         [PersonalData, Required, StringLength(60)]
         public string LastName { get; set; }
+
+        [PersonalData, Required, StringLength(11)]
+        public string ITIN { get; set; }
     }
 }

@@ -35,7 +35,9 @@ namespace IA.Identity.API
             services.AddApiConfiguration();
             services.AddVersionConfiguration();
             services.AddDatabaseConfiguration(Configuration);
+            services.AddEmailConfiguration(Configuration);
             services.AddSwaggerConfiguration();
+            services.RegisterServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

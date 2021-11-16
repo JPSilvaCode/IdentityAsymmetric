@@ -4,14 +4,16 @@ using IA.Identity.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace IA.Identity.API.Migrations
 {
     [DbContext(typeof(IAContext))]
-    partial class IAContextModelSnapshot : ModelSnapshot
+    [Migration("20211116175522_AddITIN")]
+    partial class AddITIN
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

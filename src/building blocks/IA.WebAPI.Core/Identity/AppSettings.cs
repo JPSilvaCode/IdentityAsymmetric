@@ -1,4 +1,4 @@
-﻿namespace IA.Identity.API.Extensions
+﻿namespace IA.WebAPI.Core.Identity
 {
     public class AppSettings
     {
