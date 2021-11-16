@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace IA.Identity.API.Configurations
 {
@@ -25,6 +25,8 @@ namespace IA.Identity.API.Configurations
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseIdentityConfiguration();
 
             app.UseEndpoints(endpoints =>
             {
