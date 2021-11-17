@@ -1,4 +1,6 @@
-﻿using IA.Identity.API.Identity;
+﻿using System.Linq;
+using System.Net;
+using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
 using IA.Identity.API.Services;
 using IA.Identity.API.Services.v1_0;
@@ -124,6 +126,36 @@ namespace IA.Identity.API.Controllers
             };
 
             return Ok(userResponse);
+        }
+
+        [HttpGet]
+        [Route("users")]
+        [Authorize]
+        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _authenticationService.UserManager.Users.ToListAsync();
+
+            if (users == null) return NotFound();
+
+            var usersReturn = (from user in users
+                               select new
+                               {
+                                   user.Id,
+                                   user.FirstName,
+                                   user.ITIN,
+                                   user.Email
+                               }).ToList().Select(p => new UserResponse
+                               {
+                                   Id = p.Id,
+                                   FirstName = p.FirstName,
+                                   ITIN = p.ITIN,
+                                   Email = p.Email
+                               });
+
+            return CustomResponse(usersReturn);
         }
     }
 }
