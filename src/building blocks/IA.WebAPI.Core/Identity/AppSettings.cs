@@ -6,5 +6,7 @@
         public int Expiracao { get; set; }
         public string Emissor { get; set; }
         public string ValidoEm { get; set; }
+
+        public string AutenticacaoJwksUrl { get; set; }
     }
 }

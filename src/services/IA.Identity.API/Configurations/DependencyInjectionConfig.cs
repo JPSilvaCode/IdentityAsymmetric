@@ -12,6 +12,7 @@ namespace IA.Identity.API.Configurations
 
             services.AddScoped<Services.v1_0.AuthenticationService>();
             services.AddScoped<Services.v2_0.AuthenticationService>();
+            services.AddScoped<Services.v3_0.AuthenticationService>();
             services.AddScoped<IAspNetUser, AspNetUser>();
         }
     }

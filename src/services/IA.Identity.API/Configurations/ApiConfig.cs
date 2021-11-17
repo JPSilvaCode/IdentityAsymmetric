@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using NetDevPack.Security.Jwt.AspNetCore;
 
 namespace IA.Identity.API.Configurations
 {

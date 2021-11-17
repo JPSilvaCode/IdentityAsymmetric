@@ -12,6 +12,7 @@ namespace IA.Identity.API.Controllers
 {
     [ApiVersion("1.0", Deprecated = true)]
     [ApiVersion("2.0")]
+    [ApiVersion("3.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class UserController : MainController
     {

@@ -31,6 +31,7 @@ namespace IA.Identity.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddJwksConfiguration();
             services.AddIdentityConfiguration(Configuration);
             services.AddApiConfiguration();
             services.AddVersionConfiguration();
@@ -44,6 +45,7 @@ namespace IA.Identity.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             app.UseApiConfiguration(env);
+            app.UseJwksConfiguration();
             app.UseSwaggerSetup(provider);
             app.UseVersionSetup();
         }
