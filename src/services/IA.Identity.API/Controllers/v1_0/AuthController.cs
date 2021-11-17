@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IA.Identity.API.Controllers.v1_0
 {
-    [ApiVersion("1.0")]
+    [ApiVersion("1.0", Deprecated = true)]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : MainController
     {

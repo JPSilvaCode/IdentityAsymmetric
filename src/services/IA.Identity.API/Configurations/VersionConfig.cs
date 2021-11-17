@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IA.Identity.API.Configurations
@@ -13,9 +14,11 @@ namespace IA.Identity.API.Configurations
 
             services.AddApiVersioning(p =>
             {
-                p.DefaultApiVersion = new ApiVersion(1, 0);
+                p.ApiVersionReader = new UrlSegmentApiVersionReader();
+                p.DefaultApiVersion = new ApiVersion(2, 0);
                 p.ReportApiVersions = true;
                 p.AssumeDefaultVersionWhenUnspecified = true;
+                p.ApiVersionSelector = new CurrentImplementationApiVersionSelector(p);
             });
 
             services.AddVersionedApiExplorer(p =>

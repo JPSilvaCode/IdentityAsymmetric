@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,10 +25,10 @@ namespace IA.Identity.API.Configurations
                         new OpenApiInfo
                         {
                             Version = description.ApiVersion.ToString(),
-                            Title = "Identity Core - Asymmetric Key (Public-Key)",
-                            Description = "Web API Core with Identity - Asymmetric Key (Public-Key",
+                            Title = "Identity - Asymmetric Key (Public-Key)",
+                            Description = $"Web API Core with Identity - Asymmetric Key (Public-Key).{(description.IsDeprecated ? " This API version has been deprecated." : "")}",
                             Contact = new OpenApiContact { Name = "João Paulo", Email = "contato@joaopaulo.com.br", Url = new Uri("http://www.joaopaulo.com.br") },
-                            License = new OpenApiLicense { Name = "MIT", Url = new Uri("https://github.com/JPSilvaCode/EFCore") }
+                            License = new OpenApiLicense { Name = "MIT", Url = new Uri("https://github.com/JPSilvaCode/IdentityAsymmetric") }
                         });
                 }
 
@@ -67,7 +68,7 @@ namespace IA.Identity.API.Configurations
 
             app.UseSwaggerUI(options =>
             {
-                foreach (var description in provider.ApiVersionDescriptions)
+                foreach (var description in provider.ApiVersionDescriptions.OrderByDescending(x => x.ApiVersion))
                 {
                     options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
                 }

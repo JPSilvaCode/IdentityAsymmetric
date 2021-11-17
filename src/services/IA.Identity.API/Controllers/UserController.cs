@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace IA.Identity.API.Controllers
 {
-    [ApiVersion("1.0")]
+    [ApiVersion("1.0", Deprecated = true)]
+    [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class UserController : MainController
     {
@@ -23,7 +24,7 @@ namespace IA.Identity.API.Controllers
             _emailSender = emailSender;
         }
 
-        [HttpPost, MapToApiVersion("1.0")]
+        [HttpPost]
         [Route("register")]
         [AllowAnonymous]
         public async Task<ActionResult> Register(UserRegister userRegister)
@@ -66,7 +67,7 @@ namespace IA.Identity.API.Controllers
             return Created(Url.Action("GetUserById", "User", new { id = user.Id }, Request.Scheme), userResponse);
         }
 
-        [HttpGet, MapToApiVersion("1.0")]
+        [HttpGet]
         [Route("ConfirmEmail")]
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(int userId = 0, string token = "")
@@ -104,7 +105,7 @@ namespace IA.Identity.API.Controllers
             return CustomResponse();
         }
 
-        [HttpGet, MapToApiVersion("1.0")]
+        [HttpGet]
         [Route("user/{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetUserById(int id)

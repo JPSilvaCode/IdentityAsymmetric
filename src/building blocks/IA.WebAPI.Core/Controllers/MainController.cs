@@ -18,10 +18,11 @@ namespace IA.WebAPI.Core.Controllers
                 return Ok(result);
             }
 
-            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
-            {
-                { "Mensagens", _erros.ToArray() }
-            }));
+            return BadRequest(
+                new ValidationProblemDetails(
+                new Dictionary<string, string[]> {{ "Messages", _erros.ToArray() }}
+                )
+            );
         }
 
         protected ActionResult CustomResponse(ModelStateDictionary modelState)

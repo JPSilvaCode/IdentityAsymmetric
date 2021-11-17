@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using IA.Identity.API.Models;
 using IA.Identity.API.Services.v2_0;
 using IA.WebAPI.Core.Controllers;
@@ -22,6 +23,8 @@ namespace IA.Identity.API.Controllers.v2_0
         [HttpPost, MapToApiVersion("2.0")]
         [Route("login")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(UserResponseLogin), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails),(int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult> Login(UserLogin userLogin)
         {
             if (!ModelState.IsValid) return CustomResponse(ModelState);
@@ -29,18 +32,18 @@ namespace IA.Identity.API.Controllers.v2_0
 
             if (result.Succeeded)
             {
+                if (!await _authenticationService.UserManager.IsEmailConfirmedAsync(await _authenticationService.UserManager.FindByEmailAsync(userLogin.Email)))
+                {
+                    AddProcessingError("O e-mail não foi confirmado, confirme primeiro");
+                    return CustomResponse();
+                }
+
                 return CustomResponse(await _authenticationService.CreateJwt(userLogin.Email));
             }
 
             if (result.IsLockedOut)
             {
                 AddProcessingError("Usuário temporariamente bloqueado por tentativas inválidas");
-                return CustomResponse();
-            }
-
-            if (!await _authenticationService.UserManager.IsEmailConfirmedAsync(await _authenticationService.UserManager.FindByEmailAsync(userLogin.Email)))
-            {
-                AddProcessingError("O e-mail não foi confirmado, confirme primeiro");
                 return CustomResponse();
             }
 
