@@ -2,20 +2,18 @@
 using IA.Identity.API.Extensions;
 using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
-using IA.WebAPI.Core.Identity;
+using IA.WebAPI.Core.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NetDevPack.Security.Jwt.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using IA.WebAPI.Core.User;
-using NetDevPack.Security.Jwt.Interfaces;
 
 namespace IA.Identity.API.Services.v3_0
 {
@@ -23,7 +21,6 @@ namespace IA.Identity.API.Services.v3_0
     {
         public readonly SignInManager<ApplicationUser> SignInManager;
         public readonly UserManager<ApplicationUser> UserManager;
-        private readonly AppSettings _appSettings;
         private readonly AppTokenSettings _appTokenSettingsSettings;
         private readonly IAContext _context;
 
@@ -33,7 +30,6 @@ namespace IA.Identity.API.Services.v3_0
         public AuthenticationService(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            IOptions<AppSettings> appSettings,
             IOptions<AppTokenSettings> appTokenSettingsSettings,
             IAContext context,
             IJsonWebKeySetService jwksService,
@@ -41,7 +37,6 @@ namespace IA.Identity.API.Services.v3_0
         {
             SignInManager = signInManager;
             UserManager = userManager;
-            _appSettings = appSettings.Value;
             _appTokenSettingsSettings = appTokenSettingsSettings.Value;
             _jwksService = jwksService;
             _aspNetUser = aspNetUser;
@@ -53,7 +48,7 @@ namespace IA.Identity.API.Services.v3_0
             var user = await UserManager.FindByEmailAsync(email);
             var claims = await UserManager.GetClaimsAsync(user);
 
-            var identityClaims = await GetClaimsUsuario(claims, user);
+            var identityClaims = await GetClaimsUser(claims, user);
             var encodedToken = EncodeToken(identityClaims);
 
             var refreshToken = await CreateRefreshToken(email);
@@ -61,7 +56,7 @@ namespace IA.Identity.API.Services.v3_0
             return GetResponseToken(encodedToken, user, claims, refreshToken);
         }
 
-        private async Task<ClaimsIdentity> GetClaimsUsuario(ICollection<Claim> claims, ApplicationUser user)
+        private async Task<ClaimsIdentity> GetClaimsUser(ICollection<Claim> claims, ApplicationUser user)
         {
             var userRoles = await UserManager.GetRolesAsync(user);
 
@@ -91,8 +86,8 @@ namespace IA.Identity.API.Services.v3_0
             {
                 Issuer = currentIssuer,
                 Subject = identityClaims,
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = key
+                Expires = DateTime.UtcNow.AddMinutes(1),
+                SigningCredentials = key,
             });
 
             return tokenHandler.WriteToken(token);
@@ -104,7 +99,7 @@ namespace IA.Identity.API.Services.v3_0
             {
                 AccessToken = encodedToken,
                 RefreshToken = refreshToken.Token,
-                ExpiresIn = TimeSpan.FromHours(1).TotalSeconds,
+                ExpiresIn = TimeSpan.FromMinutes(1).TotalSeconds,
                 UsuarioToken = new UserToken
                 {
                     Id = user.Id,
