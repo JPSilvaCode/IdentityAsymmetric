@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
@@ -9,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using ICWebAPI.Models;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace IA.Identity.API.Controllers
 {
@@ -109,29 +114,9 @@ namespace IA.Identity.API.Controllers
         }
 
         [HttpGet]
-        [Route("user/{id:int}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetUserById(int id)
-        {
-            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.Id.Equals(id));
-
-            if (user == null) return NotFound();
-
-            var userResponse = new UserResponse
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                ITIN = user.ITIN,
-                Email = user.Email
-            };
-
-            return Ok(userResponse);
-        }
-
-        [HttpGet]
         [Route("users")]
-        [Authorize]
-        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(IList<UserResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> GetUsers()
@@ -156,6 +141,171 @@ namespace IA.Identity.API.Controllers
                                });
 
             return CustomResponse(usersReturn);
+        }
+
+        [HttpGet]
+        [Route("user/{id:int}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.Id.Equals(id));
+
+            if (user == null) return NotFound();
+
+            var userResponse = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                ITIN = user.ITIN,
+                Email = user.Email
+            };
+
+            return Ok(userResponse);
+        }
+
+        [HttpGet]
+        [Route("userbyname/{name}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> GetUserByName(string name)
+        {
+            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.UserName.Equals(name));
+
+            if (user == null) return NotFound();
+
+            var userReturn = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                ITIN = user.ITIN,
+                Email = user.Email
+            };
+
+            return CustomResponse(userReturn);
+        }
+
+        [HttpGet]
+        [Route("userbyitin/{itin}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> GetUserByITIN(string itin)
+        {
+            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.ITIN.Equals(itin));
+
+            if (user == null) return NotFound();
+
+            var userReturn = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                ITIN = user.ITIN,
+                Email = user.Email
+            };
+
+            return CustomResponse(userReturn);
+        }
+
+        [HttpGet]
+        [Route("userbyemail/{email}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(UserResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
+
+            if (user == null) return NotFound();
+
+            var userReturn = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                ITIN = user.ITIN,
+                Email = user.Email
+            };
+
+            return CustomResponse(userReturn);
+        }
+
+        [HttpPost]
+        [Route("ChangePassword")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> ChangePassword(ChangePassword model)
+        {
+            if (!ModelState.IsValid) return CustomResponse(ModelState);
+
+            var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.Email.Equals(model.Email));
+            if (user == null) return NotFound();
+
+            if (await _authenticationService.SignInManager.CheckPasswordSignInAsync(user, model.OldPassword, true) != SignInResult.Success)
+            {
+                AddProcessingError("Usuário ou Senha incorretos");
+                return CustomResponse();
+            }
+
+            var result = await _authenticationService.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (result.Succeeded) return CustomResponse();
+
+            foreach (var error in result.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("userbyid/{id:int}")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var result = await _authenticationService.UserManager.DeleteAsync(user);
+
+            if (result.Succeeded) return CustomResponse();
+
+            foreach (var error in result.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("userbyemail/{email}")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteUser(string email)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var result = await _authenticationService.UserManager.DeleteAsync(user);
+
+            if (result.Succeeded) return CustomResponse();
+
+            foreach (var error in result.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
         }
     }
 }
