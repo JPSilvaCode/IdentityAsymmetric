@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
 using IA.Identity.API.Services;
-using IA.Identity.API.Services.v1_0;
+using IA.Identity.API.Services.v3_0;
 using IA.WebAPI.Core.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -306,6 +307,474 @@ namespace IA.Identity.API.Controllers
                 AddProcessingError(error.Description);
 
             return CustomResponse();
+        }
+
+        [HttpGet]
+        [Route("user/{id:int}/roles")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetRolesTouser(int id)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var rolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            return rolesUser == null ? NotFound() : CustomResponse(rolesUser);
+        }
+
+        [HttpGet]
+        [Route("user/{email}/roles")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetRolesTouser(string email)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var rolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            return rolesUser == null ? NotFound() : CustomResponse(rolesUser);
+        }
+
+        [HttpPost]
+        [Route("user/{id:int}/role/{role}")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignRoleToUser(int id, string role)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var roles = await _authenticationService.RoleManager.Roles.ToListAsync();
+
+            if (!roles.Any(r => r.Name.Equals(role)))
+            {
+                AddProcessingError($"Roles '{role}' não existe no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            if (currentRolesUser.Any(r => r.Equals(role)))
+            {
+                AddProcessingError($"Role '{role}' já existe para o usuário");
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.AddToRoleAsync(user, role);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{email}/role/{role}")]
+        [AllowAnonymous]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignRoleToUser(string email, string role)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var roles = await _authenticationService.RoleManager.Roles.ToListAsync();
+
+            if (!roles.Any(r => r.Name.Equals(role)))
+            {
+                AddProcessingError($"Roles '{role}' não existe no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            if (currentRolesUser.Any(r => r.Equals(role)))
+            {
+                AddProcessingError($"Role '{role}' já existe para o usuário");
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.AddToRoleAsync(user, role);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{id:int}/roles")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignRolesToUser([FromRoute] int id, [FromBody] string[] rolesToAssign)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var rolesNotExists = rolesToAssign.Except(_authenticationService.RoleManager.Roles.Select(x => x.Name)).ToArray();
+
+            if (rolesNotExists.Any())
+            {
+                AddProcessingError($"Roles '{string.Join(",", rolesNotExists)}' não existem no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            var removeResult = await _authenticationService.UserManager.RemoveFromRolesAsync(user, currentRolesUser.ToArray());
+
+            if (!removeResult.Succeeded)
+            {
+                foreach (var error in removeResult.Errors)
+                    AddProcessingError(error.Description);
+
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.AddToRolesAsync(user, rolesToAssign);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{email}/roles")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignRolesToUser([FromRoute] string email, [FromBody] string[] rolesToAssign)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var rolesNotExists = rolesToAssign.Except(_authenticationService.RoleManager.Roles.Select(x => x.Name)).ToArray();
+
+            if (rolesNotExists.Any())
+            {
+                AddProcessingError($"Roles '{string.Join(",", rolesNotExists)}' não existem no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            var removeResult = await _authenticationService.UserManager.RemoveFromRolesAsync(user, currentRolesUser.ToArray());
+
+            if (!removeResult.Succeeded)
+            {
+                foreach (var error in removeResult.Errors)
+                    AddProcessingError(error.Description);
+
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.AddToRolesAsync(user, rolesToAssign);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("user/{id:int}/role/{role}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveRoleToUser(int id, string role)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var roles = await _authenticationService.RoleManager.Roles.ToListAsync();
+
+            if (!roles.Any(r => r.Name.Equals(role)))
+            {
+                AddProcessingError($"Role '{role}' não existe no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            if (!currentRolesUser.Any(r => r.Equals(role)))
+            {
+                AddProcessingError($"Role '{role}' não existe para o usuário");
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.RemoveFromRoleAsync(user, role);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("user/{email}/role/{role}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveRoleToUser(string email, string role)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var roles = await _authenticationService.RoleManager.Roles.ToListAsync();
+
+            if (!roles.Any(r => r.Name.Equals(role)))
+            {
+                AddProcessingError($"Roles '{role}' não existe no sistema");
+                return CustomResponse();
+            }
+
+            var currentRolesUser = await _authenticationService.UserManager.GetRolesAsync(user);
+
+            if (!currentRolesUser.Any(r => r.Equals(role)))
+            {
+                AddProcessingError($"Role '{role}' não existe para o usuário");
+                return CustomResponse();
+            }
+
+            var addResult = await _authenticationService.UserManager.RemoveFromRoleAsync(user, role);
+
+            if (addResult.Succeeded) return Ok();
+
+            foreach (var error in addResult.Errors)
+                AddProcessingError(error.Description);
+
+            return CustomResponse();
+        }
+
+        [HttpGet]
+        [Route("user/{id:int}/claims")]
+        public async Task<IActionResult> GetClaimsTouser(int id)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+
+            if (claimsUser == null) return NotFound();
+
+            IList<Claim> claims = null;
+            foreach (var claimUser in claimsUser)
+            {
+                claims ??= new List<Claim>();
+                claims.Add(new Claim(claimUser.Type, claimUser.Value));
+            }
+
+            return Ok(claims);
+        }
+
+        [HttpGet]
+        [Route("user/{email}/claims")]
+        [ProducesResponseType(typeof(Claim), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetClaimsTouser(string email)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+
+            if (claimsUser == null) return NotFound();
+
+            IList<Claim> claims = null;
+            foreach (var claimUser in claimsUser)
+            {
+                claims ??= new List<Claim>();
+                claims.Add(new Claim(claimUser.Type, claimUser.Value));
+            }
+
+            return Ok(claims);
+        }
+
+        [HttpPost]
+        [Route("user/{id:int}/claim/{type}/{value}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignClaimToUser(int id, string type, string value)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+            if (claimsUser.Any(c => c.Type == type))
+                await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == type));
+
+            await _authenticationService.UserManager.AddClaimAsync(user, new Claim(type, value));
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{email}/claim/{type}/{value}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignClaimToUser(string email, string type, string value)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+            if (claimsUser.Any(c => c.Type == type))
+                await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == type));
+
+            await _authenticationService.UserManager.AddClaimAsync(user, new Claim(type, value));
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{id:int}/claims")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignClaimsToUser([FromRoute] int id, [FromBody] List<Claim> claims)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            foreach (var claimBinding in claims)
+            {
+                var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+                if (claimsUser.Any(c => c.Type == claimBinding.Type))
+                    await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == claimBinding.Type));
+
+                await _authenticationService.UserManager.AddClaimAsync(user, new Claim(claimBinding.Type, claimBinding.Value));
+            }
+
+            return CustomResponse();
+        }
+
+        [HttpPost]
+        [Route("user/{email}/claims")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> AssignClaimsToUser([FromRoute] string email, [FromBody] List<Claim> claims)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            foreach (var claimBinding in claims)
+            {
+                var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+                if (claimsUser.Any(c => c.Type == claimBinding.Type))
+                    await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == claimBinding.Type));
+
+                await _authenticationService.UserManager.AddClaimAsync(user, new Claim(claimBinding.Type, claimBinding.Value));
+            }
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("user/{id:int}/claim/{type}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveClaimFromUser(int id, string type)
+        {
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+            if (claimsUser.Any(c => c.Type == type))
+                await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == type));
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("user/{email}/claim/{type}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveClaimFromUser(string email, string type)
+        {
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+            if (claimsUser.Any(c => c.Type == type))
+                await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == type));
+
+            return CustomResponse();
+        }
+
+        [HttpDelete]
+        [Route("user/{id:int}/claims")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveClaimsFromUser([FromRoute] int id, [FromBody] List<Claim> claims)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
+
+            if (user == null) return NotFound();
+
+            foreach (var claimBinding in claims)
+            {
+                var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+                if (claimsUser.Any(c => c.Type == claimBinding.Type))
+                    await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == claimBinding.Type));
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete]
+        [Route("user/{email}/claims")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RemoveClaimsFromUser([FromRoute] string email, [FromBody] List<Claim> claims)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _authenticationService.UserManager.FindByEmailAsync(email);
+
+            if (user == null) return NotFound();
+
+            foreach (var claimBinding in claims)
+            {
+                var claimsUser = await _authenticationService.UserManager.GetClaimsAsync(user);
+                if (claimsUser.Any(c => c.Type == claimBinding.Type))
+                    await _authenticationService.UserManager.RemoveClaimAsync(user, claimsUser.SingleOrDefault(c => c.Type == claimBinding.Type));
+            }
+
+            return NoContent();
         }
     }
 }

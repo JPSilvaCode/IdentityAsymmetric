@@ -21,6 +21,7 @@ namespace IA.Identity.API.Services.v3_0
     {
         public readonly SignInManager<ApplicationUser> SignInManager;
         public readonly UserManager<ApplicationUser> UserManager;
+        public readonly RoleManager<ApplicationRole> RoleManager;
         private readonly AppTokenSettings _appTokenSettingsSettings;
         private readonly IAContext _context;
 
@@ -33,13 +34,14 @@ namespace IA.Identity.API.Services.v3_0
             IOptions<AppTokenSettings> appTokenSettingsSettings,
             IAContext context,
             IJsonWebKeySetService jwksService,
-            IAspNetUser aspNetUser)
+            IAspNetUser aspNetUser, RoleManager<ApplicationRole> roleManager)
         {
             SignInManager = signInManager;
             UserManager = userManager;
             _appTokenSettingsSettings = appTokenSettingsSettings.Value;
             _jwksService = jwksService;
             _aspNetUser = aspNetUser;
+            RoleManager = roleManager;
             _context = context;
         }
 

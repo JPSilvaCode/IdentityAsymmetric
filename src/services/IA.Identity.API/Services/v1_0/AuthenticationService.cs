@@ -1,19 +1,18 @@
-﻿using System;
+﻿using IA.Identity.API.Data;
+using IA.Identity.API.Extensions;
+using IA.Identity.API.Identity;
+using IA.Identity.API.Models;
+using IA.WebAPI.Core.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using IA.Identity.API.Data;
-using IA.Identity.API.Extensions;
-using IA.Identity.API.Identity;
-using IA.Identity.API.Models;
-using IA.WebAPI.Core.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace IA.Identity.API.Services.v1_0
 {
@@ -21,6 +20,7 @@ namespace IA.Identity.API.Services.v1_0
     {
         public readonly SignInManager<ApplicationUser> SignInManager;
         public readonly UserManager<ApplicationUser> UserManager;
+        public readonly RoleManager<ApplicationRole> RoleManager;
         private readonly AppSettings _appSettings;
         private readonly IAContext _context;
         private readonly AppTokenSettings _appTokenSettingsSettings;
@@ -29,11 +29,13 @@ namespace IA.Identity.API.Services.v1_0
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             IOptions<AppSettings> appSettings, IAContext context,
-            IOptions<AppTokenSettings> appTokenSettings)
+            IOptions<AppTokenSettings> appTokenSettings, 
+            RoleManager<ApplicationRole> roleManager)
         {
             SignInManager = signInManager;
             UserManager = userManager;
             _context = context;
+            RoleManager = roleManager;
             _appTokenSettingsSettings = appTokenSettings.Value;
             _appSettings = appSettings.Value;
         }
