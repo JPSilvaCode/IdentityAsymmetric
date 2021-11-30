@@ -1,4 +1,5 @@
 ﻿using IA.Identity.API.Services.v3_0;
+using IA.WebAPI.Core.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IA.WebAPI.Core.Controllers;
-using Microsoft.AspNetCore.Identity;
 
 namespace IA.Identity.API.Controllers
 {

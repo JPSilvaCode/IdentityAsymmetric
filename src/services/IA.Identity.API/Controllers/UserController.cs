@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using IA.Identity.API.Identity;
+﻿using IA.Identity.API.Identity;
 using IA.Identity.API.Models;
 using IA.Identity.API.Services;
 using IA.Identity.API.Services.v3_0;
 using IA.WebAPI.Core.Controllers;
+using ICWebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using ICWebAPI.Models;
-using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal;
-using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using IA.WebAPI.Core.Identity.Authorization;
 
 namespace IA.Identity.API.Controllers
 {
     [ApiVersion("1.0", Deprecated = true)]
     [ApiVersion("2.0")]
     [ApiVersion("3.0")]
+    [Authorize]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class UserController : MainController
     {
@@ -116,7 +115,8 @@ namespace IA.Identity.API.Controllers
 
         [HttpGet]
         [Route("users")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [CustomAuthorize("User", "R")]
         [ProducesResponseType(typeof(IList<UserResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
@@ -249,7 +249,7 @@ namespace IA.Identity.API.Controllers
             var user = await _authenticationService.UserManager.Users.FirstOrDefaultAsync(u => u.Email.Equals(model.Email));
             if (user == null) return NotFound();
 
-            if (await _authenticationService.SignInManager.CheckPasswordSignInAsync(user, model.OldPassword, true) != SignInResult.Success)
+            if (await _authenticationService.SignInManager.CheckPasswordSignInAsync(user, model.OldPassword, true) != Microsoft.AspNetCore.Identity.SignInResult.Success)
             {
                 AddProcessingError("Usuário ou Senha incorretos");
                 return CustomResponse();
@@ -417,6 +417,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{id:int}/roles")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignRolesToUser([FromRoute] int id, [FromBody] string[] rolesToAssign)
@@ -457,6 +458,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{email}/roles")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignRolesToUser([FromRoute] string email, [FromBody] string[] rolesToAssign)
@@ -497,6 +499,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{id:int}/role/{role}")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveRoleToUser(int id, string role)
@@ -533,6 +536,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{email}/role/{role}")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveRoleToUser(string email, string role)
@@ -569,6 +573,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpGet]
         [Route("user/{id:int}/claims")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetClaimsTouser(int id)
         {
             var user = await _authenticationService.UserManager.FindByIdAsync(id.ToString());
@@ -591,6 +596,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpGet]
         [Route("user/{email}/claims")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(Claim), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetClaimsTouser(string email)
@@ -615,6 +621,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{id:int}/claim/{type}/{value}")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignClaimToUser(int id, string type, string value)
@@ -634,6 +641,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{email}/claim/{type}/{value}")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignClaimToUser(string email, string type, string value)
@@ -653,6 +661,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{id:int}/claims")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignClaimsToUser([FromRoute] int id, [FromBody] List<Claim> claims)
@@ -677,6 +686,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpPost]
         [Route("user/{email}/claims")]
+        [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> AssignClaimsToUser([FromRoute] string email, [FromBody] List<Claim> claims)
@@ -701,6 +711,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{id:int}/claim/{type}")]
+        [Authorize(Policy = "DeleteUserPolicy")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveClaimFromUser(int id, string type)
@@ -718,6 +729,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{email}/claim/{type}")]
+        [CustomAuthorize("User", "D")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveClaimFromUser(string email, string type)
@@ -735,6 +747,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{id:int}/claims")]
+        [CustomAuthorize("User", "D")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveClaimsFromUser([FromRoute] int id, [FromBody] List<Claim> claims)
@@ -757,6 +770,7 @@ namespace IA.Identity.API.Controllers
 
         [HttpDelete]
         [Route("user/{email}/claims")]
+        [CustomAuthorize("User", "D")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> RemoveClaimsFromUser([FromRoute] string email, [FromBody] List<Claim> claims)

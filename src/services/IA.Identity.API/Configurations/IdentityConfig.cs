@@ -1,7 +1,9 @@
 ﻿using IA.Identity.API.Data;
 using IA.Identity.API.Extensions;
 using IA.Identity.API.Identity;
+using IA.Identity.API.Identity.Policies.User;
 using IA.WebAPI.Core.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,9 +26,17 @@ namespace IA.Identity.API.Configurations
                 .AddEntityFrameworkStores<IAContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("DeleteUserPolicy", policy =>
+                    policy.Requirements.Add(new DeleteUserRequirement("D")));
+            });
+
             services.Configure<AppTokenSettings>(configuration.GetSection("AppTokenSettings"));
 
             services.AddJwtConfiguration(configuration);
+
+            services.AddSingleton<IAuthorizationHandler, DeleteUserRequirementHandler>();
         }
     }
 }
