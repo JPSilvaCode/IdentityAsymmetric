@@ -17,12 +17,20 @@ namespace IA.Identity.API.Configurations
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
-            services.AddControllers();
+			services.AddCors();
+
+			services.AddControllers();
         }
 
         public static IApplicationBuilder UseApiConfiguration(this IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+			app.UseCors(option => option
+			.AllowAnyOrigin()
+			.AllowAnyMethod()
+			.AllowAnyHeader()); ;
+
+
+			if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }

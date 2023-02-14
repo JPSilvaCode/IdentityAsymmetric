@@ -88,7 +88,7 @@ namespace IA.Identity.API.Services.v3_0
             {
                 Issuer = currentIssuer,
                 Subject = identityClaims,
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = key,
             });
 
@@ -101,7 +101,7 @@ namespace IA.Identity.API.Services.v3_0
             {
                 AccessToken = encodedToken,
                 RefreshToken = refreshToken.Token,
-                ExpiresIn = TimeSpan.FromMinutes(1).TotalSeconds,
+                ExpiresIn = TimeSpan.FromMinutes(5).TotalSeconds,
                 UsuarioToken = new UserToken
                 {
                     Id = user.Id,
@@ -129,11 +129,18 @@ namespace IA.Identity.API.Services.v3_0
             return refreshToken;
         }
 
-        public async Task<RefreshToken> GetRefreshToken(Guid refreshToken)
+        public async Task<RefreshToken> GetRefreshToken(Guid tokenG)
         {
-            var token = await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(u => u.Token == refreshToken);
+            var token = await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(u => u.Token == tokenG);
 
             return token != null && token.ExpirationDate.ToLocalTime() > DateTime.Now ? token : null;
         }
-    }
+
+		public async Task<RefreshToken> GetRefreshToken(string email)
+		{
+			var token = await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(u => u.UserEmail == email);
+
+			return token != null && token.ExpirationDate.ToLocalTime() > DateTime.Now ? token : null;
+		}
+	}
 }

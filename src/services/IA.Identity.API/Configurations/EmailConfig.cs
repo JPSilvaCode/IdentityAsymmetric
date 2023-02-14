@@ -13,7 +13,7 @@ namespace IA.Identity.API.Configurations
             if (services == null) throw new ArgumentNullException(nameof(services));
 
             services.AddTransient<IEmailService, EmailService>();
-            services.Configure<EmailSetting>(configuration.GetSection("EmailSetting"));
+            services.Configure<EmailSetting>(configuration.GetSection("EmailSettings"));
         }
     }
 }
