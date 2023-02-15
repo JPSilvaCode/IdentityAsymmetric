@@ -1,9 +1,6 @@
 ﻿using IA.Identity.API.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using NetDevPack.Security.Jwt;
-using NetDevPack.Security.Jwt.AspNetCore;
-using NetDevPack.Security.Jwt.Store.EntityFrameworkCore;
 using System;
 
 namespace IA.Identity.API.Configurations
@@ -14,8 +11,8 @@ namespace IA.Identity.API.Configurations
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
-            services.AddJwksManager(options => options.Jws = JwsAlgorithm.ES256).PersistKeysToDatabaseStore<IAContext>();
-        }
+			services.AddJwksManager().PersistKeysToDatabaseStore<IAContext>();
+		}
 
         public static IApplicationBuilder UseJwksConfiguration(this IApplicationBuilder app)
         {

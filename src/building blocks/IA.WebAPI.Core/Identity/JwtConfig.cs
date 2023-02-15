@@ -23,7 +23,8 @@ namespace IA.WebAPI.Core.Identity
             {
                 x.RequireHttpsMetadata = true;
                 x.SaveToken = true;
-                x.SetJwksOptions(new JwkOptions(appSettings.AutenticacaoJwksUrl));
+				x.IncludeErrorDetails = true;
+				x.SetJwksOptions(new JwkOptions(appSettings.AutenticacaoJwksUrl));
             });
         }
 
