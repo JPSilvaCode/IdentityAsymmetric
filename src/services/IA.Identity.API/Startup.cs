@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace IA.Identity.API
 {
@@ -12,20 +11,9 @@ namespace IA.Identity.API
 	{
 		public IConfiguration Configuration { get; }
 
-		public Startup(IHostEnvironment hostEnvironment)
+		public Startup(IConfiguration configuration)
 		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(hostEnvironment.ContentRootPath)
-				.AddJsonFile("appsettings.json", true, true)
-				.AddJsonFile($"appsettings.{hostEnvironment.EnvironmentName}.json", true, true)
-				.AddEnvironmentVariables();
-
-			if (hostEnvironment.IsDevelopment())
-			{
-				builder.AddUserSecrets<Startup>();
-			}
-
-			Configuration = builder.Build();
+			Configuration = configuration;
 		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.

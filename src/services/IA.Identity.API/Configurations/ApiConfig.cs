@@ -27,8 +27,7 @@ namespace IA.Identity.API.Configurations
 			app.UseCors(option => option
 			.AllowAnyOrigin()
 			.AllowAnyMethod()
-			.AllowAnyHeader()); ;
-
+			.AllowAnyHeader()); 
 
 			if (env.IsDevelopment())
             {

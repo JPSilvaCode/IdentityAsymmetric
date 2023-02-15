@@ -1,8 +1,5 @@
-using IA.Identity.API;
-using Microsoft.AspNetCore.Builder;
+using AI.Cliente.API;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
